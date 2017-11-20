@@ -53,22 +53,7 @@ public class Server implements Binarizer {
     }
     @Override
     public String binarize(String mode, int value1, int value2) throws RemoteException{
-        if(mode==null) mode="Dolnoprogowa";
-        if(value1==0 && "Dolnoprogowa".equals(mode)){
-                            gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\nBlad: nie ustawiono dolnego progu.");
-                            return null;
-                        }
-        if(value2==0 && "Gornoprogowa".equals(mode)){
-                            gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\nBlad: nie ustawiono gornego progu.");
-                            return null;
-                        }
-        if(value1==0 && value2==0 && ("Dwuprogowa".equals(mode) || "Warunkowa".equals(mode))){
-            gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\nBlad: nie ustawiono progów.");
-                            return null;
-        }
+       
         gui.getTextArea().setText(gui.getTextArea().getText()+
                 "\nRozpoczęto binaryzację pliku. Tryb: "+mode+ ". Progi: "+value1+", "+value2+".");
         switch(Extension){

@@ -146,6 +146,7 @@ public class GUI extends javax.swing.JFrame {
 
     private void BinarizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BinarizeButtonActionPerformed
        int iThresholdLower,iThresholdUpper;
+       if(binMode==null) binMode="Dolnoprogowa";
         try{
         iThresholdLower=Integer.parseInt(ThresholdLower.getText());
        } catch (NumberFormatException nfex){
@@ -156,7 +157,19 @@ public class GUI extends javax.swing.JFrame {
        } catch (NumberFormatException nfex){
            iThresholdUpper=0;
        }
+       if(iThresholdLower<0) iThresholdLower=0;
+       if(iThresholdLower>255) iThresholdLower=255;
+       if(iThresholdUpper<0) iThresholdUpper=0;
+       if(iThresholdUpper>255) iThresholdUpper=255;
+       
+       if(!checkVars()){
+           JOptionPane.showMessageDialog(GUI.this,
+                "Popraw wprowadzone zmienne.",
+                "VAR_WARNING",
+                JOptionPane.WARNING_MESSAGE);
+       }else{
        try{
+       
        Filename=client.getStub().binarize(binMode,iThresholdLower,iThresholdUpper);
        file2=new File(Filename);
        
@@ -180,9 +193,9 @@ public class GUI extends javax.swing.JFrame {
                 "NULL_PONTER_ERROR",
                 JOptionPane.ERROR_MESSAGE);
        }
-        
+       }  
     }//GEN-LAST:event_BinarizeButtonActionPerformed
-
+    
     private void ModeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModeComboActionPerformed
 
         binMode=(String)ModeCombo.getSelectedItem();
@@ -230,6 +243,15 @@ public class GUI extends javax.swing.JFrame {
         g.drawImage(image, 0, 0, newsize.width, newsize.height, null);
         g.dispose();
         return resizedImage;
+    }
+    
+    private boolean checkVars() {
+        return((!ThresholdLower.getText().isEmpty() && "Dolnoprogowa".equals(binMode))||
+                (!ThresholdUpper.getText().isEmpty() && "Gornoprogowa".equals(binMode))||
+                (!ThresholdLower.getText().isEmpty()&&!ThresholdUpper.getText().isEmpty()&&
+                ("Dwuprogowa".equals(binMode)||"Warunkowa".equals(binMode)) &&
+                Integer.parseInt(ThresholdUpper.getText())>Integer.parseInt(ThresholdLower.getText()))); 
+
     }
     
     public static void main(String args[]) {
