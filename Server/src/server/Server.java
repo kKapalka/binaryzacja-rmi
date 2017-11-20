@@ -6,13 +6,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -22,7 +20,7 @@ import rmi.Binarizer;
 
 public class Server implements Binarizer {
     
-    private GUI gui;
+    private final GUI gui;
     private File loadedFile;
     private String Extension,newFile;
     BufferedImage newImage;
@@ -37,7 +35,7 @@ public class Server implements Binarizer {
             Registry reg = LocateRegistry.getRegistry();
             reg.bind("Binarizer", stub);
             gui.getTextArea().setText("Załadowano: 100%\nSerwer oczekuje na instrukcje.");
-        } catch(Exception e) {
+        } catch(AlreadyBoundException | RemoteException e) {
             gui.getTextArea().setText(gui.getTextArea().getText() + "\n>>>>> Wystąpił błąd: " + e.toString());
         }
     }
@@ -82,61 +80,60 @@ public class Server implements Binarizer {
             gui.getTextArea().setText(gui.getTextArea().getText()+
                 "\nUtworzono sciezke do nowego pliku.");
             BufferedImage loadedImg =ImageIO.read(loadedFile);
-gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\ndebug");
             WritableRaster raster= (WritableRaster) loadedImg.getData();
-             gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\ndebug");
+            
             int pixel,blue,green,red,greyscale;
             int[] black={0,0,0};
             int[] white={255,255,255};
             int[] warunkowa={0,0,0};
                  
-            for(int i=0;i<raster.getWidth();i++){
+            
                 for(int j=0;j<raster.getHeight();j++){
+                    for(int i=0;i<raster.getWidth();i++){
                     pixel = loadedImg.getRGB(i, j);
                     blue = pixel & 0xff;
                     green = (pixel & 0xff00) >> 8;
                     red = (pixel & 0xff0000) >> 16;
                     greyscale=(blue+green+red)/3;
-                    if ("Dolnoprogowa".equals(mode)){
-                        
-                        if(greyscale<=value1){
-                            raster.setPixel(i, j, black);
+                        switch (mode) {
+                            case "Dolnoprogowa":
+                                if(greyscale<=value1){
+                                    raster.setPixel(i, j, black);
+                                }
+                                else {
+                                    raster.setPixel(i, j, white);
+                                }       break;
+                            case "Gornoprogowa":
+                                if(greyscale>=value2) raster.setPixel(i, j, black);
+                                else raster.setPixel(i, j, white);
+                                break;
+                            case "Dwuprogowa":
+                                if(greyscale<=value1 || greyscale>value2) raster.setPixel(i,j,black);
+                                else raster.setPixel(i,j,white);
+                                break;
+                            case "Warunkowa":
+                                if(greyscale<=value1){
+                                    raster.setPixel(i,j,black);
+                                    warunkowa=black;
+                                }
+                                else if(greyscale>value2){
+                                    raster.setPixel(i,j,white);
+                                    warunkowa=white;
+                                }
+                                else if(i==1){
+                                    if(greyscale<value1+Math.round((value2-value1)/2)){
+                                        raster.setPixel(i,j,black);
+                                        warunkowa=black;
+                                    }
+                                    else{ raster.setPixel(i,j,white);
+                                    warunkowa=white;
+                                    }
+                                }
+                                else raster.setPixel(i,j,warunkowa);
+                                break;
+                            default:
+                                break;
                         }
-                        else {
-                            raster.setPixel(i, j, white);
-                        }
-                    }
-                    else if("Gornoprogowa".equals(mode)){
-                        
-                        if(greyscale>=value2) raster.setPixel(i, j, black);
-                        else raster.setPixel(i, j, white);
-                    }
-                    else if("Dwuprogowa".equals(mode)){
-                        if(greyscale<=value1 || greyscale>value2) raster.setPixel(i,j,black);
-                        else raster.setPixel(i,j,white);
-                    }
-                    else if("Warunkowa".equals(mode)){
-                        if(greyscale<=value1){
-                            raster.setPixel(i,j,black);
-                            warunkowa=black;
-                        }
-                        else if(greyscale>value2){
-                            raster.setPixel(i,j,white);
-                            warunkowa=white;
-                        }
-                        else if(i==1){
-                            if(greyscale<value1+Math.round((value2-value1)/2)){
-                                raster.setPixel(i,j,black);
-                                warunkowa=black;
-                            }
-                            else{ raster.setPixel(i,j,white);
-                            warunkowa=white;
-                            }
-                        }
-                        else raster.setPixel(i,j,warunkowa);
-                    }
                 }
             }
             ColorModel colorModel = new ComponentColorModel(
@@ -147,12 +144,10 @@ gui.getTextArea().setText(gui.getTextArea().getText()+
         ComponentColorModel.OPAQUE, 
         DataBuffer.TYPE_BYTE);
             newImage=new BufferedImage(colorModel,raster,false,null);
-            gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\ndebug");
             ImageIO.write((RenderedImage)newImage,Extension,new File (newFile));
             
              gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\nUstawiono nowe informacje.");
+                "\nBinaryzacja zakończona pomyślnie.");
              break;
                 } catch (IOException ioex){
                     gui.getTextArea().setText(gui.getTextArea().getText()+
@@ -165,7 +160,7 @@ gui.getTextArea().setText(gui.getTextArea().getText()+
                 return null;
         }
         gui.getTextArea().setText(gui.getTextArea().getText()+
-                "\nOdsyłam ścieżkę do pliku do klienta: "+newFile+".");
+                "\nPrzekazanie klientowi ścieżki do pliku: "+newFile+".");
         return newFile;
     }
     
