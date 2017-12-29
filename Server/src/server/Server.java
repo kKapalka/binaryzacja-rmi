@@ -65,12 +65,14 @@ public class Server implements Binarizer {
             gui.getTextArea().setText(gui.getTextArea().getText()+
                 "\nUtworzono sciezke do nowego pliku.");
             BufferedImage loadedImg =ImageIO.read(loadedFile);
+            //BufferedImage loadedImg = new BufferedImage(Img.getWidth(), Img.getHeight(), BufferedImage.TYPE_INT_RGB);
             WritableRaster raster= (WritableRaster) loadedImg.getData();
             
+            
             int pixel,blue,green,red,greyscale;
-            int[] black={0,0,0};
-            int[] white={255,255,255};
-            int[] warunkowa={0,0,0};
+            int[] black={0,0,0,255};
+            int[] white={255,255,255,255};
+            int[] warunkowa={0,0,0,255};
                  
             
                 for(int j=0;j<raster.getHeight();j++){
@@ -121,14 +123,23 @@ public class Server implements Binarizer {
                         }
                 }
             }
-            ColorModel colorModel = new ComponentColorModel(
-        ColorSpace.getInstance(ColorSpace.CS_sRGB), 
-        new int[]{8, 8, 8}, // bits
-        false, // hasAlpha
-        false, // isPreMultiplied
-        ComponentColorModel.OPAQUE, 
-        DataBuffer.TYPE_BYTE);
-            newImage=new BufferedImage(colorModel,raster,false,null);
+            ColorModel rgb = new ComponentColorModel(
+                ColorSpace.getInstance(ColorSpace.CS_sRGB), 
+                new int[]{8, 8, 8}, // bits
+                false, // hasAlpha
+                false, // isPreMultiplied
+                ComponentColorModel.OPAQUE, 
+                DataBuffer.TYPE_BYTE
+            );
+            ColorModel rgba = new ComponentColorModel(
+                ColorSpace.getInstance(ColorSpace.CS_sRGB), 
+                new int[]{8, 8, 8, 8}, // bits
+                true, // hasAlpha
+                false, // isPreMultiplied
+                ComponentColorModel.OPAQUE, 
+                DataBuffer.TYPE_BYTE
+            );
+            newImage=new BufferedImage(loadedImg.getColorModel().hasAlpha()?rgba:rgb,raster,false,null);
             ImageIO.write((RenderedImage)newImage,Extension,new File (newFile));
             
              gui.getTextArea().setText(gui.getTextArea().getText()+

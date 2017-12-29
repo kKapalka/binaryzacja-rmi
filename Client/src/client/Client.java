@@ -1,9 +1,6 @@
 package client;
 
 import gui.GUI;
-import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import javax.swing.JOptionPane;
