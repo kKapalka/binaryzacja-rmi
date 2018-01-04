@@ -18,6 +18,9 @@ public class JPEGImageFileFilter extends FileFilter implements java.io.FileFilte
    {
    if (f.getName().toLowerCase().endsWith(".jpeg")) return true;
    if (f.getName().toLowerCase().endsWith(".jpg")) return true;
+   if (f.getName().toLowerCase().endsWith(".bmp")) return true;
+
+   if (f.getName().toLowerCase().endsWith(".png")) return true;
    if(f.isDirectory())return true;
    return false;
   }

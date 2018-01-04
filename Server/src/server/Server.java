@@ -56,6 +56,7 @@ public class Server implements Binarizer {
        
         gui.getTextArea().setText(gui.getTextArea().getText()+
                 "\nRozpoczęto binaryzację pliku. Tryb: "+mode+ ". Progi: "+value1+", "+value2+".");
+        Extension=Extension.toLowerCase();
         switch(Extension){
             case "jpg": case "jpeg":
             case "bmp":

@@ -204,11 +204,12 @@ public class GUI extends javax.swing.JFrame {
     }//GEN-LAST:event_ModeComboActionPerformed
 
     private void LoadImageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoadImageButtonActionPerformed
+        fc.setFileFilter(new JPEGImageFileFilter());
         int returnVal = fc.showOpenDialog(GUI.this);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
-            fc.setFileFilter(new JPEGImageFileFilter());
+            
             try{
             client.getStub().loadFile(file);
             loadedImg = rescale(ImageIO.read(file));
